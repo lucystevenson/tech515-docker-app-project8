@@ -444,34 +444,41 @@ outcome:
 - Security Group:
   - SSH → Port 22 → My IP
   - HTTP (Custom TCP) → Port 3000 → 0.0.0.0/0
+![ec2 security group](images/docker_ec2_sg.jpg)
 - User Data:
-
 ```
 #!/bin/bash
 
 echo "=== Updating system ==="
-apt update -y
+sudo apt update -y
 
 echo "=== Installing Docker ==="
-apt install -y docker.io docker-compose git
+sudo apt install -y docker.io docker-compose git
 
 echo "enable and start docker"
-systemctl start docker
-systemctl enable docker
+sudo systemctl start docker
+sudo systemctl enable docker
 
 echo "Allow ubuntu to run docker"
 sudo usermod -aG docker ubuntu
 
 echo "clone app repo and cd into folder"
-git clone https://github.com/lucystevenson/tech515-docker-app-project8.git
-cd tech515-docker-app-project8
+git clone https://github.com/lucystevenson/tech515-docker-app-project8.git repo
+cd repo
 
 
 echo "stop containers and remove volumes (to allow reseeding)"
-docker compose down -v
+docker-compose down -v
 
 echo " build and run containers"
-docker compose up -d
-
+docker-compose up -d
 ```
 within this github repo we have docker-compose.yml and Dockerfile
+
+- I first made the ec2 and manually ran the Sparta app with the above commands. Output:
+
+![man docker ec2 deployment](images/docker_posts_man_ec2.jpg)
+
+- Then I made a new ec2 with the user data above. Output:
+
+![auto docker ec2 deployment](images/docker_posts_auto_ec2.jpg)
