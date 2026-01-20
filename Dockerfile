@@ -4,12 +4,13 @@ LABEL maintainer="lucy stevenson"
 
 WORKDIR /usr/src/app
 
-# copy package files first (better caching)
+# Copy package files first
 COPY app/package*.json ./
 
-RUN npm install
+# Disable postinstall scripts (THIS IS THE FIX)
+RUN npm install --ignore-scripts
 
-# copy rest of app
+# Copy rest of app
 COPY app .
 
 EXPOSE 3000

@@ -9,6 +9,14 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  seed:
+    image: lucysteve/sparta-node-app:v1
+    depends_on:
+      - mongo
+    environment:
+      DB_HOST: mongodb://mongo:27017/posts
+    command: node seeds/seed.js
+    
   app:
     build: . # added this as Docker Compose does NOT use your local Dockerfile automatically unless you tell it to build.
     image: lucysteve/sparta-node-app:v1
@@ -18,7 +26,7 @@ services:
     depends_on:
       - mongo
     environment:
-      DB_HOST: mongo
+      DB_HOST: mongodb://mongo:27017/posts
     command: npm start
 
 volumes:

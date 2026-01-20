@@ -303,10 +303,13 @@ Docker Compose ensures:
   ```
   - posts is empty as we have not seeded the database yet
 
-Docker Compose does NOT use your local Dockerfile automatically unless you tell it to build, so I added `build .` in the app services withing docker-compose.yml file:
 
 
-docker-compose.yml file
+🔑 Docker Compose does NOT use your local Dockerfile automatically unless you tell it to build, so I added `build .` in the app services withing docker-compose.yml file:
+
+My Steps
+
+1. Create docker-compose.yml file
 ```
 version: "3.8"
 
@@ -335,7 +338,7 @@ volumes:
   mongo-data:
 ```
 
-Dockerfile
+2. Create Dockerfile
 
 ```
 FROM node:20
@@ -356,3 +359,77 @@ EXPOSE 3000
 
 CMD ["node", "app.js"]
 ```
+
+3. Start containers `docker compose up -d --build` (detached mode with -d)
+  
+``` 
+# clean restart
+docker compose down
+docker compose up -d --build
+```
+checks:
+- `docker compose ps` lists the containers (services) that belong to the current Docker Compose project
+
+- `docker compose logs app` shows the stdout / stderr logs from the app service container (shows errors and start up messages)
+
+
+1. Test
+  ```
+  http://localhost:3000
+  http://localhost:3000/posts
+  ```
+![alt text](image.png)
+
+
+## Seeding the database
+
+### Manually
+
+How - logging into the container and running the command
+
+- If you need run a command inside your docker container, use this command:
+  - docker exec -it <container-name> <cmd>
+  - Examples:
+  - `docker exec -it app node seeds/seed.js`
+  - `docker exec -it mongo cat /etc/mongod.conf` 
+    - Just prints MongoDB’s config file
+    - It’s useful if you want to:
+      - Check bind IP
+      - Check storage paths
+      - Learn Mongo internals
+
+**My Steps**
+
+I ran `docker exec -it app node seeds/seed.js`
+
+**What this does?**
+
+- Runs the seed script inside the app container
+- Connects to MongoDB using: mongodb://mongo:27017/posts
+- Inserts data into the database
+
+![alt text](images/docker_posts_after_seeded_man.jpg)
+
+### Automatically
+
+1. To automatically seed, I have added a new service in docker-compose.yml and I implemented by executing the seed script when the application container starts:
+
+```
+seed:
+  image: lucysteve/sparta-node-app:v1
+  depends_on:
+    - mongo
+  environment:
+    DB_HOST: mongodb://mongo:27017/posts
+  command: node seeds/seed.js
+```
+I made sure this depends on mongo, so the database is run first
+
+2. Then re-start containers:
+```
+docker compose down
+docker compose up -d --build
+```
+
+outcome:
+![alt text](image-1.png)
