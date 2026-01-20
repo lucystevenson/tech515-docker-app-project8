@@ -302,3 +302,57 @@ Docker Compose ensures:
   http://localhost:3000/posts
   ```
   - posts is empty as we have not seeded the database yet
+
+Docker Compose does NOT use your local Dockerfile automatically unless you tell it to build, so I added `build .` in the app services withing docker-compose.yml file:
+
+
+docker-compose.yml file
+```
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:5.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: . # added this as Docker Compose does NOT use your local Dockerfile automatically unless you tell it to build.
+    image: lucysteve/sparta-node-app:v1
+    container_name: app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      DB_HOST: mongo
+    command: npm start
+
+volumes:
+  mongo-data:
+```
+
+Dockerfile
+
+```
+FROM node:20
+
+LABEL maintainer="lucy stevenson"
+
+WORKDIR /usr/src/app
+
+# copy package files first (better caching)
+COPY app/package*.json ./
+
+RUN npm install
+
+# copy rest of app
+COPY app .
+
+EXPOSE 3000
+
+CMD ["node", "app.js"]
+```

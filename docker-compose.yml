@@ -10,6 +10,7 @@ services:
       - mongo-data:/data/db
 
   app:
+    build: . # added this as Docker Compose does NOT use your local Dockerfile automatically unless you tell it to build.
     image: lucysteve/sparta-node-app:v1
     container_name: app
     ports:
