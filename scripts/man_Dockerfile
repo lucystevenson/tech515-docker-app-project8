@@ -1,0 +1,18 @@
+FROM node:20
+
+LABEL maintainer="lucy stevenson"
+
+WORKDIR /usr/src/app
+
+# Copy package files first
+COPY app/package*.json ./
+
+# Disable postinstall scripts (THIS IS THE FIX)
+RUN npm install --ignore-scripts
+
+# Copy rest of app
+COPY app .
+
+EXPOSE 3000
+
+CMD ["node", "app.js"]

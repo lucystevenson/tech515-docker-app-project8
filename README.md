@@ -440,7 +440,7 @@ outcome:
 
 1. Create EC2 Instance
 - AMI: Ubuntu Server 22.04 LTS
-- Instance type: t2.micro (free tier)
+- Instance type: t3.micro (free tier)
 - Security Group:
   - SSH → Port 22 → My IP
   - HTTP (Custom TCP) → Port 3000 → 0.0.0.0/0
