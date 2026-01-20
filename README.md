@@ -92,7 +92,7 @@ check: http://localhost:3000/
 ✅ Summary
 
 Docker Compose allows you to:
-- Define multi-container apps in one file
+- Define **multi-container apps in one file**
 - Run everything with one command
 - Manage services efficiently
 - Maintain consistency across environments
@@ -187,7 +187,7 @@ docker compose down
 ❓ Difference between detached and non-detached mode
 Mode	Description
 Non-detached	Logs visible, terminal blocked
-Detached (-d)	Runs in background
+**Detached (-d)	Runs in background**
 
 #### ⏹ Stop the application
 
@@ -218,3 +218,87 @@ Detached (-d)	Runs in background
 <br>
 
 # Task: Use Docker Compose to run app and database containers
+
+## Overview
+The aim of this task is to use **Docker Compose** to run:
+- A **Node.js Sparta test app** container
+- A **MongoDB database** container
+
+The application depends on MongoDB, so **both containers must run together**
+
+## 🖼 Required Images
+
+### Do we have the images we need?
+- ✅ **Node app**: Uses a custom microservice image pushed to Docker Hub
+- ✅ **MongoDB**: Uses an official MongoDB image from Docker Hub
+
+Recommended MongoDB image:
+mongo:5.0
+
+## Make Docker compose file
+
+```
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:5.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    image: lucysteve/sparta-node-app:v1
+    container_name: app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      DB_HOST: mongo
+    command: npm start
+
+volumes:
+  mongo-data:
+```
+
+## 🧩 Docker Compose Design
+
+We will create two services:
+
+1. mongo – MongoDB database
+2. app – Node.js web application
+
+🔑 No need to manually configure bindIp; Docker networking allows containers to communicate automatically
+
+Docker Compose ensures:
+
+- MongoDB starts before the app
+- Both services run on the same Docker network
+- Environment variables are passed correctly
+
+## 🗄 Database Service Explanation
+
+- Uses the official MongoDB image
+- Exposes port 27017
+- Uses a named volume to persist data
+- No need to manually configure bindIp; Docker networking allows containers to communicate automatically
+
+## 🌐 Web App Service Explanation
+
+- Uses the custom Node app image from Docker Hub
+- Exposes port 3000
+- Links to MongoDB using: `DB_HOST=mongo`
+- Depends_on ensures MongoDB starts first
+
+## ▶ Running the Application
+
+- Start containers `docker compose up -d` (detached mode with -d)
+- Test with
+  ```
+  http://localhost:3000
+  http://localhost:3000/posts
+  ```
+  - posts is empty as we have not seeded the database yet
