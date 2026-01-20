@@ -433,3 +433,45 @@ docker compose up -d --build
 
 outcome:
 ![alt text](image-1.png)
+
+## Extension - Run the containers on an EC2 instance
+
+**My Steps**
+
+1. Create EC2 Instance
+- AMI: Ubuntu Server 22.04 LTS
+- Instance type: t2.micro (free tier)
+- Security Group:
+  - SSH → Port 22 → My IP
+  - HTTP (Custom TCP) → Port 3000 → 0.0.0.0/0
+- User Data:
+
+```
+#!/bin/bash
+
+echo "=== Updating system ==="
+apt update -y
+
+echo "=== Installing Docker ==="
+apt install -y docker.io docker-compose git
+
+echo "enable and start docker"
+systemctl start docker
+systemctl enable docker
+
+echo "Allow ubuntu to run docker"
+sudo usermod -aG docker ubuntu
+
+echo "clone app repo and cd into folder"
+git clone https://github.com/lucystevenson/tech515-docker-app-project8.git
+cd tech515-docker-app-project8
+
+
+echo "stop containers and remove volumes (to allow reseeding)"
+docker compose down -v
+
+echo " build and run containers"
+docker compose up -d
+
+```
+within this github repo we have docker-compose.yml and Dockerfile
